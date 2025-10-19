@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" colorMatched="YES" initialViewController="LaunchVC">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Launch Screen View Controller-->
+        <scene sceneID="LaunchScene">
+            <objects>
+                <viewController id="LaunchVC" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="LaunchView">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="LargeIcon" translatesAutoresizingMaskIntoConstraints="NO" id="iconImageView">
+                                <rect key="frame" x="147" y="338" width="120" height="120"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="120" id="iconWidth"/>
+                                    <constraint firstAttribute="height" constant="120" id="iconHeight"/>
+                                </constraints>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="FreeYT" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="titleLabel">
+                                <rect key="frame" x="107" y="478" width="200" height="40"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="36"/>
+                                <color key="textColor" systemColor="labelColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Privacy YouTube Extension" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="subtitleLabel">
+                                <rect key="frame" x="107" y="528" width="200" height="20"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="16" weight="medium"/>
+                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                            </label>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="iconImageView" firstAttribute="centerX" secondItem="LaunchView" secondAttribute="centerX" id="iconCenterX"/>
+                            <constraint firstItem="iconImageView" firstAttribute="centerY" secondItem="LaunchView" secondAttribute="centerY" constant="-50" id="iconCenterY"/>
+                            <constraint firstItem="titleLabel" firstAttribute="centerX" secondItem="LaunchView" secondAttribute="centerX" id="titleCenterX"/>
+                            <constraint firstItem="titleLabel" firstAttribute="top" secondItem="iconImageView" secondAttribute="bottom" constant="20" id="titleTopConstraint"/>
+                            <constraint firstItem="subtitleLabel" firstAttribute="centerX" secondItem="LaunchView" secondAttribute="centerX" id="subtitleCenterX"/>
+                            <constraint firstItem="subtitleLabel" firstAttribute="top" secondItem="titleLabel" secondAttribute="bottom" constant="10" id="subtitleTopConstraint"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="firstResponder" sceneMemberID="firstResponder"/>
+            </objects>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="LargeIcon" width="512" height="512"/>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="labelColor">
+            <color white="0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.6" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>
