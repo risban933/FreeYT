@@ -23,9 +23,23 @@
     </div>
   </section>
 
+  <section class="info" id="onboarding" style="display:none;">
+    <p><strong>Welcome to FreeYT</strong> — Redirects YouTube links to <code>yout-ube.com</code> for privacy. Toggle to enable/disable.</p>
+    <p class="details">Tip: Try a demo redirect to see it work instantly.</p>
+    <button id="tryDemoBtn">Try demo</button>
+  </section>
+
   <section class="info">
-    <p>Automatically redirects YouTube to no-cookie version.</p>
-    <p class="details">Changes "youtube" to "yout-ube" in URLs for privacy protection (no tracking cookies).</p>
+    <p id="howItWorks">Redirects YouTube links to <code>yout-ube.com</code> for privacy-friendly viewing.</p>
+    <p class="details">
+      <span id="statToday">Today: 0</span> •
+      <span id="statTotal">Total: 0</span> •
+      <span id="statLast">Last: —</span>
+    </p>
+    <div style="margin-top:10px;">
+      <button id="demoBtn">Run redirect test</button>
+    </div>
+    <div id="errorBanner" style="display:none; margin-top:10px;"></div>
   </section>
 
   <footer>

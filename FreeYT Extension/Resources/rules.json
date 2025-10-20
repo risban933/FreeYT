@@ -4,13 +4,11 @@
     "priority": 1,
     "action": {
       "type": "redirect",
-      "redirect": {
-        "regexSubstitution": "\\1yout-ube\\2"
-      }
+      "redirect": { "regexSubstitution": "https://yout-ube.com/\\2" }
     },
     "condition": {
-      "regexFilter": "^(https?://(www\\.)?)youtube(\\.com/watch\\?.*)$",
-      "resourceTypes": ["main_frame"]
+      "regexFilter": "^https?://([a-z0-9-]+\\.)?youtube\\.com/(.*)$",
+      "resourceTypes": ["main_frame", "sub_frame"]
     }
   },
   {
@@ -18,13 +16,11 @@
     "priority": 1,
     "action": {
       "type": "redirect",
-      "redirect": {
-        "regexSubstitution": "\\1yout-ube\\2"
-      }
+      "redirect": { "regexSubstitution": "https://yout-ube.com/watch?v=\\1&\\2" }
     },
     "condition": {
-      "regexFilter": "^(https?://(www\\.)?)youtube(\\.com/shorts/.*)$",
-      "resourceTypes": ["main_frame"]
+      "regexFilter": "^https?://youtu\\.be/([\\w-]{11})\\?(.*)$",
+      "resourceTypes": ["main_frame", "sub_frame"]
     }
   },
   {
@@ -32,55 +28,11 @@
     "priority": 1,
     "action": {
       "type": "redirect",
-      "redirect": {
-        "regexSubstitution": "\\1yout-ube\\2"
-      }
+      "redirect": { "regexSubstitution": "https://yout-ube.com/watch?v=\\1" }
     },
     "condition": {
-      "regexFilter": "^(https?://(www\\.)?)youtube(\\.com/embed/.*)$",
-      "resourceTypes": ["main_frame"]
-    }
-  },
-  {
-    "id": 4,
-    "priority": 1,
-    "action": {
-      "type": "redirect",
-      "redirect": {
-        "regexSubstitution": "\\1yout-ube\\2"
-      }
-    },
-    "condition": {
-      "regexFilter": "^(https?://(www\\.)?)youtube(\\.com/live/.*)$",
-      "resourceTypes": ["main_frame"]
-    }
-  },
-  {
-    "id": 5,
-    "priority": 1,
-    "action": {
-      "type": "redirect",
-      "redirect": {
-        "regexSubstitution": "\\1yout-ube\\2"
-      }
-    },
-    "condition": {
-      "regexFilter": "^(https?://m\\.)youtube(\\.com/watch\\?.*)$",
-      "resourceTypes": ["main_frame"]
-    }
-  },
-  {
-    "id": 6,
-    "priority": 1,
-    "action": {
-      "type": "redirect",
-      "redirect": {
-        "regexSubstitution": "https://yout-ube.be\\1"
-      }
-    },
-    "condition": {
-      "regexFilter": "^https?://youtu\\.be(/.*)?$",
-      "resourceTypes": ["main_frame"]
+      "regexFilter": "^https?://youtu\\.be/([\\w-]{11})$",
+      "resourceTypes": ["main_frame", "sub_frame"]
     }
   }
 ]

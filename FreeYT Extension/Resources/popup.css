@@ -306,3 +306,57 @@ input:checked:focus + .slider {
 .slider:active:before {
   width: 26px;
 }
+
+.info button,
+#tryDemoBtn,
+#demoBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.info button:hover,
+#tryDemoBtn:hover,
+#demoBtn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px var(--accent-glow);
+}
+
+.info button:focus-visible,
+#tryDemoBtn:focus-visible,
+#demoBtn:focus-visible {
+  outline: 2px solid var(--accent-hover);
+  outline-offset: 2px;
+}
+
+#errorBanner {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(255, 99, 71, 0.15);
+  color: #ff6f61;
+  font-size: 12px;
+  border: 1px solid rgba(255, 99, 71, 0.3);
+}
+
+#onboarding {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed var(--border);
+}
+
+#onboarding p {
+  margin-bottom: 8px;
+}
+
+#onboarding button {
+  width: 100%;
+}
