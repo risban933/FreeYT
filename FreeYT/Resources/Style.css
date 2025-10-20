@@ -7,7 +7,24 @@
 :root {
     color-scheme: light dark;
 
-    --spacing: 20px;
+    --spacing: 24px;
+    --bg-gradient-start: #0a0a0a;
+    --bg-gradient-end: #1a1a1a;
+    --accent: #ff3b5c;
+    --accent-glow: rgba(255, 59, 92, 0.25);
+    --text-primary: #f0f0f0;
+    --text-secondary: #a8a8a8;
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --bg-gradient-start: #f5f5f5;
+        --bg-gradient-end: #ffffff;
+        --accent: #ff1744;
+        --accent-glow: rgba(255, 23, 68, 0.2);
+        --text-primary: #1a1a1a;
+        --text-secondary: #666666;
+    }
 }
 
 html {
@@ -24,6 +41,60 @@ body {
     margin: 0 calc(var(--spacing) * 2);
     height: 100%;
 
-    font: -apple-system-short-body;
+    font: -apple-system-body;
     text-align: center;
+
+    background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+    animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+img {
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: transform 0.3s ease;
+}
+
+img:hover {
+    transform: scale(1.05);
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+p {
+    color: var(--text-primary);
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.6;
+    max-width: 400px;
+    animation: slideUp 0.6s ease-out 0.2s both;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

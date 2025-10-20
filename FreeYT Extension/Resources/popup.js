@@ -3,6 +3,7 @@
 
   const enabledToggle = document.getElementById('enabledToggle');
   const statusText = document.getElementById('statusText');
+  const statusBadge = document.getElementById('statusBadge');
 
   const STORAGE_KEY = 'enabled';
 
@@ -11,6 +12,13 @@
     enabledToggle.checked = enabled;
     statusText.textContent = enabled ? 'Enabled' : 'Disabled';
     statusText.style.color = enabled ? 'var(--success)' : 'var(--fg-muted)';
+
+    // Update status badge
+    if (enabled) {
+      statusBadge.classList.add('active');
+    } else {
+      statusBadge.classList.remove('active');
+    }
   }
 
   // Initialize popup
