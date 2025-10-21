@@ -86,8 +86,8 @@ async function updateBadge() {
 if (chrome.declarativeNetRequest?.onRuleMatchedDebug) {
   chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(async (info) => {
     try {
-      // Count only our redirect rules (1,2,3)
-      if ([1, 2, 3].includes(info?.rule?.ruleId)) {
+      // Count only our redirect rules (1-5)
+      if ([1, 2, 3, 4, 5].includes(info?.rule?.ruleId)) {
         await incrementRedirectCounter();
         // Notify popup (if open)
         const ping = chrome.runtime.sendMessage({ type: "statsUpdated" });

@@ -4,10 +4,12 @@
     "priority": 1,
     "action": {
       "type": "redirect",
-      "redirect": { "regexSubstitution": "https://yout-ube.com/\\2" }
+      "redirect": {
+        "regexSubstitution": "https://www.youtube-nocookie.com/embed/\\1"
+      }
     },
     "condition": {
-      "regexFilter": "^https?://([a-z0-9-]+\\.)?youtube\\.com/(.*)$",
+      "regexFilter": "^https?://(?:[a-z0-9-]+\\.)?youtube\\.com/watch\\?[^#]*v=([\\w-]{11})(?:[&#].*)?$",
       "resourceTypes": ["main_frame", "sub_frame"]
     }
   },
@@ -16,10 +18,12 @@
     "priority": 1,
     "action": {
       "type": "redirect",
-      "redirect": { "regexSubstitution": "https://yout-ube.com/watch?v=\\1&\\2" }
+      "redirect": {
+        "regexSubstitution": "https://www.youtube-nocookie.com/embed/\\1"
+      }
     },
     "condition": {
-      "regexFilter": "^https?://youtu\\.be/([\\w-]{11})\\?(.*)$",
+      "regexFilter": "^https?://(?:[a-z0-9-]+\\.)?youtube\\.com/shorts/([\\w-]{11})(?:\\?[^#]*)?$",
       "resourceTypes": ["main_frame", "sub_frame"]
     }
   },
@@ -28,10 +32,40 @@
     "priority": 1,
     "action": {
       "type": "redirect",
-      "redirect": { "regexSubstitution": "https://yout-ube.com/watch?v=\\1" }
+      "redirect": {
+        "regexSubstitution": "https://www.youtube-nocookie.com/embed/\\1"
+      }
     },
     "condition": {
-      "regexFilter": "^https?://youtu\\.be/([\\w-]{11})$",
+      "regexFilter": "^https?://youtu\\.be/([\\w-]{11})(?:\\?[^#]*)?$",
+      "resourceTypes": ["main_frame", "sub_frame"]
+    }
+  },
+  {
+    "id": 4,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "regexSubstitution": "https://www.youtube-nocookie.com/embed/\\1"
+      }
+    },
+    "condition": {
+      "regexFilter": "^https?://(?:[a-z0-9-]+\\.)?youtube\\.com/embed/([\\w-]{11})(?:\\?[^#]*)?$",
+      "resourceTypes": ["main_frame", "sub_frame"]
+    }
+  },
+  {
+    "id": 5,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "regexSubstitution": "https://www.youtube-nocookie.com/embed/\\1"
+      }
+    },
+    "condition": {
+      "regexFilter": "^https?://(?:[a-z0-9-]+\\.)?youtube\\.com/live/([\\w-]{11})(?:\\?[^#]*)?$",
       "resourceTypes": ["main_frame", "sub_frame"]
     }
   }
