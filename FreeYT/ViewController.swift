@@ -7,6 +7,7 @@
 
 import UIKit
 import SafariServices
+import SwiftUI
 
 final class FreeYTViewController: UIViewController {
 
@@ -141,6 +142,27 @@ final class FreeYTViewController: UIViewController {
         return button
     }()
 
+    private let searchDemoButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+
+        var config = UIButton.Configuration.tinted()
+        config.title = "Try Search Demo"
+        config.baseBackgroundColor = .systemBlue
+        config.baseForegroundColor = .systemBlue
+        config.cornerStyle = .large
+        config.buttonSize = .medium
+
+        if #available(iOS 15.0, *) {
+            config.image = UIImage(systemName: "magnifyingglass")
+            config.imagePadding = 8
+            config.imagePlacement = .leading
+        }
+
+        button.configuration = config
+        return button
+    }()
+
     private let statusIndicator: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -168,11 +190,67 @@ final class FreeYTViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         setupGradientBackground()
-        animateEntrance()
+        
+        // Check if this is first launch using OnboardingManager
+        if OnboardingManager.shared.isFirstLaunch {
+            showWelcomeAnimation()
+        } else {
+            animateEntrance()
+        }
 
         #if targetEnvironment(macCatalyst)
         checkExtensionState()
         #endif
+        
+        // Add periodic extension state checking for better UX
+        startPeriodicExtensionCheck()
+        
+        // Listen for onboarding completion notifications
+        NotificationCenter.default.addObserver(
+            self, 
+            selector: #selector(onboardingCompleted), 
+            name: OnboardingManager.Notification.onboardingCompleted, 
+            object: nil
+        )
+        
+        // Modern trait change registration - iOS 17+
+        if #available(iOS 17.0, *) {
+            registerForTraitChanges([UITraitUserInterfaceStyle.self]) { [weak self] (traitEnvironment: UITraitEnvironment, previousTraitCollection: UITraitCollection) in
+                self?.updateGradientForTraitChanges()
+            }
+        }
+    }
+    
+    @available(iOS 17.0, *)
+    private func updateGradientForTraitChanges() {
+        // Update gradient on theme change for iOS 17+
+        view.layer.sublayers?.first?.removeFromSuperlayer()
+        setupGradientBackground()
+    }
+    
+    // Fallback for iOS 16 and earlier
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        
+        // Only use deprecated method on iOS 16 and earlier
+        if #unavailable(iOS 17.0) {
+            if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+                view.layer.sublayers?.first?.removeFromSuperlayer()
+                setupGradientBackground()
+            }
+        }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        // Mark that the app has been launched
+        OnboardingManager.shared.markAppAsLaunched()
+    }
+    
+    @objc private func onboardingCompleted() {
+        // Handle any additional setup when onboarding is completed
+        print("Onboarding completed! Analytics: \(OnboardingManager.shared.getOnboardingAnalytics())")
     }
 
     // MARK: - UI Setup
@@ -215,6 +293,7 @@ final class FreeYTViewController: UIViewController {
         contentStackView.addArrangedSubview(descriptionCard)
         contentStackView.addArrangedSubview(instructionsCard)
         contentStackView.addArrangedSubview(openSettingsButton)
+        contentStackView.addArrangedSubview(searchDemoButton)
         contentStackView.addArrangedSubview(statusIndicator)
 
         // Spacing customization
@@ -225,6 +304,7 @@ final class FreeYTViewController: UIViewController {
 
         setupConstraints()
         openSettingsButton.addTarget(self, action: #selector(openSafariSettings), for: .touchUpInside)
+        searchDemoButton.addTarget(self, action: #selector(showSearchDemo), for: .touchUpInside)
     }
 
     private func setupConstraints() {
@@ -270,6 +350,10 @@ final class FreeYTViewController: UIViewController {
             // Button
             openSettingsButton.widthAnchor.constraint(equalTo: contentStackView.widthAnchor),
             openSettingsButton.heightAnchor.constraint(equalToConstant: 56),
+            
+            // Search Demo Button
+            searchDemoButton.widthAnchor.constraint(equalTo: contentStackView.widthAnchor),
+            searchDemoButton.heightAnchor.constraint(equalToConstant: 48),
 
             // Status indicator
             statusIndicator.widthAnchor.constraint(equalTo: contentStackView.widthAnchor),
@@ -355,6 +439,8 @@ final class FreeYTViewController: UIViewController {
         instructionsCard.transform = CGAffineTransform(translationX: 0, y: 30)
         openSettingsButton.alpha = 0
         openSettingsButton.transform = CGAffineTransform(translationX: 0, y: 30)
+        searchDemoButton.alpha = 0
+        searchDemoButton.transform = CGAffineTransform(translationX: 0, y: 30)
 
         // Animate in sequence
         UIView.animate(withDuration: 0.6, delay: 0.1, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut) {
@@ -386,6 +472,11 @@ final class FreeYTViewController: UIViewController {
             self.openSettingsButton.alpha = 1
             self.openSettingsButton.transform = .identity
         }
+
+        UIView.animate(withDuration: 0.5, delay: 0.7, options: .curveEaseOut) {
+            self.searchDemoButton.alpha = 1
+            self.searchDemoButton.transform = .identity
+        }
     }
 
     // MARK: - Actions
@@ -400,9 +491,126 @@ final class FreeYTViewController: UIViewController {
             }
         }
 
-        if let url = URL(string: "App-prefs:SAFARI") {
-            UIApplication.shared.open(url)
+        // Show helpful feedback
+        showSettingsGuidance()
+        
+        // Open settings with fallback options
+        openSafariSettingsWithFallback()
+    }
+    
+    private func showSettingsGuidance() {
+        // Create a temporary guidance overlay
+        let guidanceView = createGuidanceOverlay()
+        view.addSubview(guidanceView)
+        
+        NSLayoutConstraint.activate([
+            guidanceView.topAnchor.constraint(equalTo: openSettingsButton.bottomAnchor, constant: 16),
+            guidanceView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            guidanceView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24)
+        ])
+        
+        // Animate in
+        guidanceView.alpha = 0
+        guidanceView.transform = CGAffineTransform(translationX: 0, y: 10)
+        UIView.animate(withDuration: 0.3) {
+            guidanceView.alpha = 1
+            guidanceView.transform = .identity
         }
+        
+        // Auto-remove after 8 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 8.0) {
+            UIView.animate(withDuration: 0.3) {
+                guidanceView.alpha = 0
+            } completion: { _ in
+                guidanceView.removeFromSuperview()
+            }
+        }
+    }
+    
+    private func createGuidanceOverlay() -> UIView {
+        let container = UIView()
+        container.translatesAutoresizingMaskIntoConstraints = false
+        container.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.1)
+        container.layer.cornerRadius = 12
+        container.layer.borderWidth = 1
+        container.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.3).cgColor
+        
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "💡 Look for 'Extensions' in Safari Settings, then toggle FreeYT ON"
+        label.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        label.textColor = .systemBlue
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        
+        container.addSubview(label)
+        
+        NSLayoutConstraint.activate([
+            label.topAnchor.constraint(equalTo: container.topAnchor, constant: 12),
+            label.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
+            label.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -16),
+            label.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -12)
+        ])
+        
+        return container
+    }
+    
+    private func openSafariSettingsWithFallback() {
+        // Try different URLs to open Safari settings
+        let settingsURLs = [
+            "App-prefs:SAFARI",
+            "prefs:root=SAFARI",
+            "App-prefs:root=SAFARI"
+        ]
+        
+        var settingsOpened = false
+        
+        for urlString in settingsURLs {
+            if let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url) { success in
+                    if success {
+                        DispatchQueue.main.async {
+                            // Check extension state after a delay to see if user enabled it
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                                #if targetEnvironment(macCatalyst)
+                                self.checkExtensionState()
+                                #endif
+                            }
+                        }
+                    }
+                }
+                settingsOpened = true
+                break
+            }
+        }
+        
+        if !settingsOpened {
+            // Fallback: show an alert with manual instructions
+            showManualInstructionsAlert()
+        }
+    }
+    
+    private func showManualInstructionsAlert() {
+        let alert = UIAlertController(
+            title: "Open Safari Settings",
+            message: "Please manually open Settings app → Safari → Extensions → Enable FreeYT",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "Got it", style: .default))
+        present(alert, animated: true)
+    }
+    
+    @objc private func showSearchDemo() {
+        // Create and present the SwiftUI search demo
+        let searchDemoView = SearchDemoView()
+        let hostingController = UIHostingController(rootView: searchDemoView)
+        hostingController.title = "Search Demo"
+        
+        let navigationController = UINavigationController(rootViewController: hostingController)
+        navigationController.modalPresentationStyle = .formSheet
+        
+        present(navigationController, animated: true)
     }
 
     // MARK: - Extension State
@@ -413,6 +621,9 @@ final class FreeYTViewController: UIViewController {
             let extensionIdentifier = "com.freeyt.app.extension"
             SFSafariWebExtensionManager.getStateOfSafariWebExtension(withIdentifier: extensionIdentifier) { [weak self] state, error in
                 DispatchQueue.main.async {
+                    // Update last check time
+                    OnboardingManager.shared.updateLastExtensionCheckDate()
+                    
                     if let error = error {
                         print("[FreeYT] Extension state error:", error.localizedDescription)
                         return
@@ -425,6 +636,15 @@ final class FreeYTViewController: UIViewController {
 
                     if state.isEnabled {
                         self?.updateUIForEnabledState()
+                        
+                        // Mark onboarding as completed when extension is enabled
+                        if !OnboardingManager.shared.hasCompletedOnboarding {
+                            OnboardingManager.shared.markOnboardingAsCompleted()
+                            OnboardingManager.shared.notifyOnboardingCompleted()
+                        }
+                        
+                        // Notify about extension status change
+                        OnboardingManager.shared.notifyExtensionStatusChanged(isEnabled: true)
                     }
                 }
             }
@@ -432,44 +652,240 @@ final class FreeYTViewController: UIViewController {
     }
 
     private func updateUIForEnabledState() {
-        instructionsTitleLabel.text = "✓ Extension Enabled!"
+        // Update instructions title with success state
+        instructionsTitleLabel.text = "✅ Extension Enabled!"
         instructionsTitleLabel.textColor = .systemGreen
-
-        // Update button
+        
+        // Hide individual instruction steps since they're complete
+        instructionsStackView.arrangedSubviews.forEach { $0.alpha = 0.6 }
+        
+        // Add success message to instructions
+        let successLabel = UILabel()
+        successLabel.text = "🎉 Great! Your YouTube browsing is now privacy-protected."
+        successLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        successLabel.textColor = .systemGreen
+        successLabel.textAlignment = .center
+        successLabel.numberOfLines = 0
+        successLabel.alpha = 0
+        successLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        instructionsStackView.addArrangedSubview(successLabel)
+        
+        // Update button to success state
         if #available(iOS 15.0, *) {
             var config = openSettingsButton.configuration
-            config?.title = "Extension Active"
+            config?.title = "✓ Extension Active & Working"
             config?.baseBackgroundColor = .systemGreen
             config?.image = UIImage(systemName: "checkmark.circle.fill")
             openSettingsButton.configuration = config
             openSettingsButton.isEnabled = false
         }
 
-        // Show status
-        statusLabel.text = "✓ Your extension is active and protecting your privacy on YouTube."
+        // Show status with detailed information
+        statusLabel.text = "🛡️ FreeYT is now redirecting YouTube links to privacy-enhanced versions automatically. Enjoy safer browsing!"
         statusLabel.textColor = .systemGreen
         statusIndicator.isHidden = false
         statusIndicator.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.1)
+        statusIndicator.layer.borderWidth = 1
+        statusIndicator.layer.borderColor = UIColor.systemGreen.withAlphaComponent(0.3).cgColor
 
-        // Animate status appearance
+        // Animate all success states
+        UIView.animate(withDuration: 0.5, delay: 0.1, options: .curveEaseOut) {
+            successLabel.alpha = 1
+        }
+        
         statusIndicator.alpha = 0
         statusIndicator.transform = CGAffineTransform(translationX: 0, y: 20)
-        UIView.animate(withDuration: 0.5, delay: 0.7, options: .curveEaseOut) {
+        UIView.animate(withDuration: 0.6, delay: 0.2, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut) {
             self.statusIndicator.alpha = 1
             self.statusIndicator.transform = .identity
+        }
+        
+        // Add a celebratory haptic feedback
+        if #available(iOS 10.0, *) {
+            let feedbackGenerator = UINotificationFeedbackGenerator()
+            feedbackGenerator.notificationOccurred(.success)
+        }
+        
+        // Show completion celebration
+        showCompletionCelebration()
+    }
+    
+    private func showCompletionCelebration() {
+        // Create celebration emojis that animate across the screen
+        let emojis = ["🎉", "🛡️", "✨", "🔒"]
+        
+        for (index, emoji) in emojis.enumerated() {
+            let emojiLabel = UILabel()
+            emojiLabel.text = emoji
+            emojiLabel.font = UIFont.systemFont(ofSize: 30)
+            emojiLabel.translatesAutoresizingMaskIntoConstraints = false
+            
+            view.addSubview(emojiLabel)
+            
+            // Position randomly along the top
+            emojiLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20).isActive = true
+            emojiLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: CGFloat(index * 80 + 40)).isActive = true
+            
+            // Initial state
+            emojiLabel.alpha = 0
+            emojiLabel.transform = CGAffineTransform(scaleX: 0.1, y: 0.1)
+            
+            // Animate in with delay
+            UIView.animate(withDuration: 0.8, delay: Double(index) * 0.1, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.3, options: .curveEaseOut) {
+                emojiLabel.alpha = 1
+                emojiLabel.transform = .identity
+            } completion: { _ in
+                // Animate out after a delay
+                UIView.animate(withDuration: 0.5, delay: 2.0) {
+                    emojiLabel.alpha = 0
+                    emojiLabel.transform = CGAffineTransform(translationX: 0, y: -50)
+                } completion: { _ in
+                    emojiLabel.removeFromSuperview()
+                }
+            }
         }
     }
     #endif
 
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-
-        // Update gradient on theme change
-        if #available(iOS 13.0, *) {
-            if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
-                view.layer.sublayers?.first?.removeFromSuperlayer()
-                setupGradientBackground()
+    // MARK: - First Launch & Onboarding
+    
+    private func showWelcomeAnimation() {
+        // Enhanced welcome animation for first-time users
+        
+        // Initial state - everything hidden and positioned
+        let allAnimatableViews = [iconImageView, titleLabel, subtitleLabel, descriptionCard, instructionsCard, openSettingsButton]
+        
+        for view in allAnimatableViews {
+            view.alpha = 0
+            view.transform = CGAffineTransform(translationX: 0, y: 50)
+        }
+        
+        iconImageView.transform = CGAffineTransform(scaleX: 0.3, y: 0.3)
+        
+        // Show welcome message first
+        showTemporaryWelcomeMessage()
+        
+        // Then animate main content after delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            self.animateMainContent()
+        }
+    }
+    
+    private func showTemporaryWelcomeMessage() {
+        let welcomeLabel = UILabel()
+        welcomeLabel.text = "Welcome to FreeYT! 🎉"
+        welcomeLabel.font = UIFont.systemFont(ofSize: 28, weight: .bold)
+        welcomeLabel.textAlignment = .center
+        welcomeLabel.alpha = 0
+        welcomeLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        view.addSubview(welcomeLabel)
+        
+        NSLayoutConstraint.activate([
+            welcomeLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            welcomeLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
+        
+        // Animate welcome message
+        UIView.animate(withDuration: 0.8, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.3, options: .curveEaseOut) {
+            welcomeLabel.alpha = 1
+        } completion: { _ in
+            UIView.animate(withDuration: 0.5, delay: 0.5) {
+                welcomeLabel.alpha = 0
+            } completion: { _ in
+                welcomeLabel.removeFromSuperview()
             }
         }
+    }
+    
+    private func animateMainContent() {
+        // Icon animation with bounce
+        UIView.animate(withDuration: 0.8, delay: 0, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.3, options: .curveEaseOut) {
+            self.iconImageView.alpha = 1
+            self.iconImageView.transform = .identity
+        }
+
+        // Title with slide up
+        UIView.animate(withDuration: 0.6, delay: 0.2, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut) {
+            self.titleLabel.alpha = 1
+            self.titleLabel.transform = .identity
+        }
+
+        // Subtitle
+        UIView.animate(withDuration: 0.6, delay: 0.3, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut) {
+            self.subtitleLabel.alpha = 1
+            self.subtitleLabel.transform = .identity
+        }
+
+        // Description card
+        UIView.animate(withDuration: 0.6, delay: 0.4, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut) {
+            self.descriptionCard.alpha = 1
+            self.descriptionCard.transform = .identity
+        }
+
+        // Instructions card
+        UIView.animate(withDuration: 0.6, delay: 0.5, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut) {
+            self.instructionsCard.alpha = 1
+            self.instructionsCard.transform = .identity
+        }
+
+        // Settings button with special highlight animation
+        UIView.animate(withDuration: 0.6, delay: 0.6, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut) {
+            self.openSettingsButton.alpha = 1
+            self.openSettingsButton.transform = .identity
+        } completion: { _ in
+            self.highlightSettingsButton()
+        }
+        
+        // Search demo button
+        UIView.animate(withDuration: 0.6, delay: 0.7, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut) {
+            self.searchDemoButton.alpha = 1
+            self.searchDemoButton.transform = .identity
+        }
+    }
+    
+    private func highlightSettingsButton() {
+        // Subtle pulse animation to draw attention to the button
+        UIView.animate(withDuration: 1.0, delay: 0, options: [.repeat, .autoreverse, .allowUserInteraction]) {
+            self.openSettingsButton.transform = CGAffineTransform(scaleX: 1.05, y: 1.05)
+        }
+        
+        // Stop the pulse after a few cycles
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
+            UIView.animate(withDuration: 0.3) {
+                self.openSettingsButton.transform = .identity
+            }
+        }
+    }
+    
+    // MARK: - Periodic Extension Checking
+    
+    private var extensionCheckTimer: Timer?
+    
+    private func startPeriodicExtensionCheck() {
+        #if targetEnvironment(macCatalyst)
+        // Check extension state periodically using OnboardingManager's smart timing
+        extensionCheckTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { [weak self] _ in
+            if OnboardingManager.shared.shouldCheckExtensionStatus {
+                self?.checkExtensionState()
+            }
+        }
+        #endif
+    }
+    
+    private func stopPeriodicExtensionCheck() {
+        extensionCheckTimer?.invalidate()
+        extensionCheckTimer = nil
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        stopPeriodicExtensionCheck()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+        stopPeriodicExtensionCheck()
     }
 }
