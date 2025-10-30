@@ -8,329 +8,203 @@
 import SwiftUI
 
 struct SearchDemoView: View {
-    @State private var customSearchQuery = ""
-    @State private var nativeSearchQuery = ""
+    @State private var searchQuery: String = ""
     @State private var searchResults: [SearchResult] = []
-    @State private var isLoading = false
-    @State private var selectedTab = 0
+    @State private var isSearching: Bool = false
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        TabView(selection: $selectedTab) {
-            // Custom Liquid Glass Search Bar Demo
-            customSearchDemo
-                .tabItem {
-                    Label("Custom", systemImage: "magnifyingglass.circle")
-                }
-                .tag(0)
-            
-            // Native .searchable Demo
-            nativeSearchDemo
-                .tabItem {
-                    Label("Native", systemImage: "list.bullet")
-                }
-                .tag(1)
-        }
-    }
-    
-    // Demo a: Custom LiquidGlassSearchBar driving results with debounced async filtering
-    private var customSearchDemo: some View {
-        NavigationStack {
+        NavigationView {
             VStack(spacing: 0) {
-                // Pinned search bar at top
-                VStack(spacing: 16) {
-                    LiquidGlassSearchBar(
-                        query: $customSearchQuery,
-                        placeholder: "Search YouTube content...",
-                        scopes: SearchScope.allCases,
-                        onSubmit: performCustomSearch
-                    )
-                    .padding(.horizontal, 16)
+                // Demo explanation header
+                VStack(spacing: 12) {
+                    Text("🔍 Search Demo")
+                        .font(.title2.weight(.bold))
                     
-                    if isLoading {
-                        ProgressView()
-                            .scaleEffect(0.8)
-                    }
+                    Text("This demonstrates how FreeYT can enhance your YouTube search experience with privacy-focused features.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
                 }
-                .padding(.vertical, 12)
-                .background(.regularMaterial, ignoresSafeAreaEdges: .top)
+                .padding(.top, 16)
+                .padding(.bottom, 24)
                 
-                // Results list
-                List {
-                    if searchResults.isEmpty && !customSearchQuery.isEmpty && !isLoading {
-                        ContentUnavailableView(
-                            "No Results",
-                            systemImage: "magnifyingglass",
-                            description: Text("Try searching for something else")
-                        )
-                    } else {
+                // Search bar
+                LiquidGlassSearchBar(
+                    query: $searchQuery,
+                    placeholder: "Search YouTube videos...",
+                    scopes: [.all, .videos, .channels],
+                    onSubmit: performSearch
+                )
+                .padding(.horizontal)
+                
+                // Search results
+                ScrollView {
+                    LazyVStack(spacing: 16) {
                         ForEach(searchResults) { result in
-                            SearchResultRow(result: result)
-                                .listRowSeparator(.hidden)
-                                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                            SearchResultCard(result: result)
                         }
                     }
+                    .padding()
                 }
-                .listStyle(.plain)
-                .scrollContentBackground(.hidden)
+                
+                Spacer()
             }
-            .navigationTitle("FreeYT Search")
-            .navigationBarTitleDisplayMode(.large)
-            .onAppear {
-                // Load initial sample data
-                loadSampleData()
-            }
-        }
-    }
-    
-    // Demo b: Native .searchable example with search scopes and token suggestions
-    private var nativeSearchDemo: some View {
-        NavigationStack {
-            List {
-                ForEach(filteredNativeResults) { result in
-                    SearchResultRow(result: result)
-                        .listRowSeparator(.hidden)
-                }
-            }
-            .navigationTitle("Native Search")
-            .searchable(text: $nativeSearchQuery, placement: .navigationBarDrawer(displayMode: .always))
-            .searchScopes($nativeSearchQuery) {
-                ForEach(SearchScope.allCases) { scope in
-                    Text(scope.rawValue).tag(scope.rawValue)
-                }
-            }
-            .onSubmit(of: .search) {
-                Task {
-                    await performNativeSearch(nativeSearchQuery)
-                }
-            }
-            .onChange(of: nativeSearchQuery) { _, newValue in
-                // Real-time filtering for native search
-                if !newValue.isEmpty {
-                    Task {
-                        await performNativeSearch(newValue)
+            .navigationTitle("Search Demo")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
                     }
                 }
             }
-            .onAppear {
-                loadSampleData()
-            }
+        }
+        .onAppear {
+            // Load some demo results
+            loadDemoResults()
         }
     }
     
-    private var filteredNativeResults: [SearchResult] {
-        if nativeSearchQuery.isEmpty {
-            return searchResults
-        }
-        return searchResults.filter { result in
-            result.title.localizedCaseInsensitiveContains(nativeSearchQuery) ||
-            result.description.localizedCaseInsensitiveContains(nativeSearchQuery)
-        }
-    }
-    
-    @MainActor
-    private func performCustomSearch(_ query: String) async {
+    private func performSearch(_ query: String) async {
         guard !query.isEmpty else {
-            searchResults = sampleResults
+            searchResults = demoResults
             return
         }
         
-        isLoading = true
+        isSearching = true
         
-        // Simulate network delay
-        try? await Task.sleep(for: .milliseconds(500))
+        // Simulate search delay
+        try? await Task.sleep(nanoseconds: 500_000_000)
         
-        // Filter results based on query
-        let filtered = sampleResults.filter { result in
+        // Filter demo results based on query
+        searchResults = demoResults.filter { result in
             result.title.localizedCaseInsensitiveContains(query) ||
-            result.description.localizedCaseInsensitiveContains(query) ||
             result.channel.localizedCaseInsensitiveContains(query)
         }
         
-        searchResults = filtered
-        isLoading = false
+        isSearching = false
     }
     
-    @MainActor
-    private func performNativeSearch(_ query: String) async {
-        // Simulate async search for native implementation
-        try? await Task.sleep(for: .milliseconds(200))
-        
-        if query.isEmpty {
-            searchResults = sampleResults
-        } else {
-            searchResults = sampleResults.filter { result in
-                result.title.localizedCaseInsensitiveContains(query) ||
-                result.description.localizedCaseInsensitiveContains(query) ||
-                result.channel.localizedCaseInsensitiveContains(query)
-            }
-        }
-    }
-    
-    private func loadSampleData() {
-        searchResults = sampleResults
+    private func loadDemoResults() {
+        searchResults = demoResults
     }
 }
 
-// MARK: - Search Result Model and Sample Data
-
-struct SearchResult: Identifiable, Hashable {
+struct SearchResult: Identifiable {
     let id = UUID()
     let title: String
-    let description: String
     let channel: String
-    let thumbnailName: String
     let duration: String
     let views: String
-    let uploadTime: String
-    let type: SearchScope
+    let thumbnailColor: Color
+    let isPrivacyEnhanced: Bool
 }
 
-private let sampleResults: [SearchResult] = [
-    SearchResult(
-        title: "Privacy-First YouTube Browsing",
-        description: "Learn how to browse YouTube safely with privacy-enhanced features and no tracking cookies.",
-        channel: "Tech Privacy Guide",
-        thumbnailName: "video1",
-        duration: "10:34",
-        views: "125K views",
-        uploadTime: "2 days ago",
-        type: .videos
-    ),
-    SearchResult(
-        title: "Understanding Browser Extensions",
-        description: "A comprehensive guide to how browser extensions work and how they protect your privacy.",
-        channel: "Code Academy",
-        thumbnailName: "video2",
-        duration: "15:22",
-        views: "89K views",
-        uploadTime: "1 week ago",
-        type: .videos
-    ),
-    SearchResult(
-        title: "Privacy Tech Channel",
-        description: "Channel dedicated to privacy tools, browser security, and safe internet browsing practices.",
-        channel: "Privacy Tech",
-        thumbnailName: "channel1",
-        duration: "",
-        views: "45K subscribers",
-        uploadTime: "",
-        type: .channels
-    ),
-    SearchResult(
-        title: "Safari Extension Development",
-        description: "Complete tutorial series on building Safari extensions for enhanced web browsing.",
-        channel: "iOS Dev Weekly",
-        thumbnailName: "playlist1",
-        duration: "8 videos",
-        views: "Updated last week",
-        uploadTime: "",
-        type: .playlists
-    ),
-    SearchResult(
-        title: "YouTube Without Ads: Privacy Methods",
-        description: "Explore different ways to watch YouTube content while maintaining your privacy and avoiding unwanted tracking.",
-        channel: "Digital Freedom",
-        thumbnailName: "video3",
-        duration: "12:45",
-        views: "67K views",
-        uploadTime: "3 days ago",
-        type: .videos
-    ),
-    SearchResult(
-        title: "Web Privacy Essentials Playlist",
-        description: "Essential videos covering web privacy, tracking protection, and safe browsing habits.",
-        channel: "Security First",
-        thumbnailName: "playlist2",
-        duration: "12 videos",
-        views: "Updated 2 days ago",
-        uploadTime: "",
-        type: .playlists
-    )
-]
-
-// MARK: - Search Result Row View
-
-struct SearchResultRow: View {
+struct SearchResultCard: View {
     let result: SearchResult
     
     var body: some View {
         HStack(spacing: 12) {
-            // Thumbnail placeholder with glass effect
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(.tertiary)
-                .frame(width: 80, height: 60)
+            // Thumbnail placeholder
+            RoundedRectangle(cornerRadius: 8)
+                .fill(result.thumbnailColor)
+                .frame(width: 120, height: 68)
                 .overlay {
-                    VStack {
-                        Image(systemName: result.type.systemImage)
-                            .font(.title2)
-                            .foregroundStyle(.secondary)
-                        
-                        if !result.duration.isEmpty {
-                            Text(result.duration)
-                                .font(.caption2)
-                                .fontWeight(.medium)
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(.black.opacity(0.8), in: RoundedRectangle(cornerRadius: 4))
-                        }
-                    }
+                    Image(systemName: "play.fill")
+                        .font(.title2)
+                        .foregroundStyle(.white)
                 }
-                .liquidGlass(RoundedRectangle(cornerRadius: 8, style: .continuous))
             
-            // Content
             VStack(alignment: .leading, spacing: 4) {
                 Text(result.title)
-                    .font(.headline)
+                    .font(.subheadline.weight(.medium))
                     .lineLimit(2)
-                    .multilineTextAlignment(.leading)
                 
-                Text(result.description)
-                    .font(.subheadline)
+                Text(result.channel)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
                 
                 HStack {
-                    Text(result.channel)
-                        .font(.caption)
+                    Text(result.views)
+                        .font(.caption2)
                         .foregroundStyle(.secondary)
                     
-                    if !result.views.isEmpty {
-                        Text("•")
-                            .foregroundStyle(.secondary)
-                        
-                        Text(result.views)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
+                    Text("•")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
                     
-                    if !result.uploadTime.isEmpty {
-                        Text("•")
-                            .foregroundStyle(.secondary)
-                        
-                        Text(result.uploadTime)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                    Text(result.duration)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    
+                    if result.isPrivacyEnhanced {
+                        HStack(spacing: 2) {
+                            Image(systemName: "shield.fill")
+                                .font(.caption2)
+                                .foregroundStyle(.green)
+                            Text("Privacy+")
+                                .font(.caption2.weight(.medium))
+                                .foregroundStyle(.green)
+                        }
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.green.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 4))
                     }
                 }
             }
             
             Spacer()
         }
-        .contentShape(Rectangle())
+        .padding()
+        .background(Color(UIColor.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
 }
 
-#Preview("Custom Search") {
-    SearchDemoView()
-}
-
-#Preview("Search Result Row") {
-    List {
-        SearchResultRow(result: sampleResults[0])
-        SearchResultRow(result: sampleResults[1])
-        SearchResultRow(result: sampleResults[2])
-    }
-    .listStyle(.plain)
-}
+// Demo data
+private let demoResults: [SearchResult] = [
+    SearchResult(
+        title: "How to Build iOS Apps with SwiftUI",
+        channel: "Apple Developer",
+        duration: "12:45",
+        views: "1.2M views",
+        thumbnailColor: .blue,
+        isPrivacyEnhanced: true
+    ),
+    SearchResult(
+        title: "Privacy on the Web: Best Practices",
+        channel: "Web Security Channel",
+        duration: "8:30",
+        views: "450K views",
+        thumbnailColor: .green,
+        isPrivacyEnhanced: true
+    ),
+    SearchResult(
+        title: "JavaScript Fundamentals Tutorial",
+        channel: "Code Academy",
+        duration: "25:15",
+        views: "3.4M views",
+        thumbnailColor: .orange,
+        isPrivacyEnhanced: false
+    ),
+    SearchResult(
+        title: "Safari Extensions Development Guide",
+        channel: "Developer Tutorials",
+        duration: "18:22",
+        views: "89K views",
+        thumbnailColor: .purple,
+        isPrivacyEnhanced: true
+    ),
+    SearchResult(
+        title: "Understanding Web Privacy",
+        channel: "Privacy Matters",
+        duration: "15:45",
+        views: "670K views",
+        thumbnailColor: .red,
+        isPrivacyEnhanced: true
+    )
+]

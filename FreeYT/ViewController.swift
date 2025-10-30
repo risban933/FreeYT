@@ -213,32 +213,19 @@ final class FreeYTViewController: UIViewController {
             object: nil
         )
         
-        // Modern trait change registration - iOS 17+
-        if #available(iOS 17.0, *) {
-            registerForTraitChanges([UITraitUserInterfaceStyle.self]) { [weak self] (traitEnvironment: UITraitEnvironment, previousTraitCollection: UITraitCollection) in
-                self?.updateGradientForTraitChanges()
-            }
+        // Modern trait change registration
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { [weak self] (traitEnvironment: UITraitEnvironment, previousTraitCollection: UITraitCollection) in
+            self?.updateGradientForTraitChanges()
         }
     }
     
-    @available(iOS 17.0, *)
     private func updateGradientForTraitChanges() {
-        // Update gradient on theme change for iOS 17+
-        view.layer.sublayers?.first?.removeFromSuperlayer()
-        setupGradientBackground()
-    }
-    
-    // Fallback for iOS 16 and earlier
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        
-        // Only use deprecated method on iOS 16 and earlier
-        if #unavailable(iOS 17.0) {
-            if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
-                view.layer.sublayers?.first?.removeFromSuperlayer()
-                setupGradientBackground()
-            }
+        // Update gradient on theme change
+        // Remove existing gradient layer safely
+        if let gradientLayer = view.layer.sublayers?.first(where: { $0 is CAGradientLayer }) as? CAGradientLayer {
+            gradientLayer.removeFromSuperlayer()
         }
+        setupGradientBackground()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -608,7 +595,7 @@ final class FreeYTViewController: UIViewController {
         hostingController.title = "Search Demo"
         
         let navigationController = UINavigationController(rootViewController: hostingController)
-        navigationController.modalPresentationStyle = .formSheet
+        navigationController.modalPresentationStyle = UIModalPresentationStyle.formSheet
         
         present(navigationController, animated: true)
     }

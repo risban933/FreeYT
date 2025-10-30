@@ -37,6 +37,21 @@ public struct LiquidGlassSearchBar: View {
     @State private var showCancel = false
     @State private var debouncer = Debouncer()
     
+    // Simple debouncer for search functionality
+    class Debouncer {
+        private var workItem: DispatchWorkItem?
+        
+        func call(delay: DispatchTimeInterval = .milliseconds(300), action: @escaping () async -> Void) {
+            workItem?.cancel()
+            workItem = DispatchWorkItem {
+                Task {
+                    await action()
+                }
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem!)
+        }
+    }
+    
     // Accessibility: Dynamic Type and High Contrast support
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.colorScheme) private var colorScheme
@@ -108,10 +123,8 @@ public struct LiquidGlassSearchBar: View {
                     // Tapping clear resets query and keeps focus
                     query = ""
                     // Provide haptic feedback
-                    if #available(iOS 17.0, *) {
-                        let feedback = UIImpactFeedbackGenerator(style: .light)
-                        feedback.impactOccurred()
-                    }
+                    let feedback = UIImpactFeedbackGenerator(style: .light)
+                    feedback.impactOccurred()
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 16, weight: .medium))
@@ -160,10 +173,8 @@ public struct LiquidGlassSearchBar: View {
         
         return Button {
             // Selection triggers haptics and refresh
-            if #available(iOS 17.0, *) {
-                let feedback = UISelectionFeedbackGenerator()
-                feedback.selectionChanged()
-            }
+            let feedback = UISelectionFeedbackGenerator()
+            feedback.selectionChanged()
             
             withAnimation(.easeInOut(duration: 0.2)) {
                 currentScope = scope
