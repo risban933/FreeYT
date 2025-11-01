@@ -117,7 +117,15 @@ FreeYT/
 Defines extension permissions, background worker, toolbar action, and declarativeNetRequest rules.
 
 ### rules.json
-Contains regex patterns for matching and redirecting YouTube URLs. All redirect rules use priority 1 and apply to youtube.com domains.
+Implements the declarativeNetRequest redirects that make the extension useful. The five rules cover the most common YouTube entry points and convert them to their privacy-respecting embeds on `youtube-nocookie.com`:
+
+1. `youtube.com/watch` (including `m.youtube.com`) → `https://www.youtube-nocookie.com/embed/<videoId>`
+2. `youtube.com/shorts/<videoId>` → `https://www.youtube-nocookie.com/embed/<videoId>`
+3. `youtu.be/<videoId>` → `https://www.youtube-nocookie.com/embed/<videoId>`
+4. `youtube.com/embed/<videoId>` → `https://www.youtube-nocookie.com/embed/<videoId>` (ensures existing embeds shed tracking cookies)
+5. `youtube.com/live/<videoId>` → `https://www.youtube-nocookie.com/embed/<videoId>`
+
+All rules target both `main_frame` and `sub_frame` resource types so that navigation, links, and inline iframes receive the same privacy upgrade.
 
 ### background.js
 Service worker that:

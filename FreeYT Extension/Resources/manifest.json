@@ -10,8 +10,7 @@
   ],
   "host_permissions": [
     "*://*.youtube.com/*",
-    "*://youtu.be/*",
-    "*://yout-ube.com/*"
+    "*://youtu.be/*"
   ],
   "icons": {
     "48": "images/icon-48.png",
