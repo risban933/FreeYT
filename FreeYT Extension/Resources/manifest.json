@@ -4,14 +4,15 @@
   "version": "1.0.0",
   "description": "Automatically redirects YouTube URLs to privacy-enhanced no-cookie versions.",
   "permissions": [
-    "storage",
     "declarativeNetRequest",
-    "declarativeNetRequestFeedback"
+    "declarativeNetRequestFeedback",
+    "storage",
+    "tabs",
+    "webNavigation"
   ],
   "host_permissions": [
     "*://*.youtube.com/*",
-    "*://youtu.be/*",
-    "*://yout-ube.com/*"
+    "*://youtu.be/*"
   ],
   "icons": {
     "48": "images/icon-48.png",
@@ -34,15 +35,26 @@
   "declarative_net_request": {
     "rule_resources": [
       {
-        "id": "redirectRules",
+        "id": "ruleset_1",
         "enabled": true,
         "path": "rules.json"
       }
     ]
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.youtube.com/*",
+        "*://youtu.be/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
   "browser_specific_settings": {
     "safari": {
       "strict_min_version": "15.4"

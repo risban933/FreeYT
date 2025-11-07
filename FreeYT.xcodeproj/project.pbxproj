@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		494052A82EA56865008381B4 /* FreeYT Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 494052A72EA56865008381B4 /* FreeYT Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		49A62B6B2EB3C702001460E7 /* OnboardingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A62B6A2EB3C702001460E7 /* OnboardingManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,7 +51,6 @@
 		494052912EA56864008381B4 /* FreeYTTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FreeYTTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4940529B2EA56865008381B4 /* FreeYTUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FreeYTUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		494052A72EA56865008381B4 /* FreeYT Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "FreeYT Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
-		49A62B6A2EB3C702001460E7 /* OnboardingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -137,7 +135,6 @@
 				4940529E2EA56865008381B4 /* FreeYTUITests */,
 				494052AB2EA56865008381B4 /* FreeYT Extension */,
 				494052752EA56864008381B4 /* Products */,
-				49A62B6A2EB3C702001460E7 /* OnboardingManager.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -312,7 +309,6 @@
 		494052702EA56864008381B4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
-				49A62B6B2EB3C702001460E7 /* OnboardingManager.swift in Sources */,
 			);
 		};
 		4940528D2EA56864008381B4 /* Sources */ = {
@@ -433,7 +429,7 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -473,7 +469,7 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

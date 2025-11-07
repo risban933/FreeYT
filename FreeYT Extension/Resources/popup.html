@@ -8,63 +8,25 @@
 </head>
 <body>
   <header>
-    <img src="images/icon-48.png" alt="FreeYT" width="32" height="32" />
+    <img src="images/icon-48.png" alt="FreeYT" width="24" height="24" />
     <h1>FreeYT</h1>
   </header>
 
-  <main>
-    <!-- Toggle Control Card -->
-    <section class="status glass-card">
-      <label class="switch">
-        <input type="checkbox" id="enabledToggle" />
-        <span class="slider"></span>
-      </label>
-      <div class="status-info">
-        <span id="statusText">Enabled</span>
-        <span class="status-badge" id="statusBadge"></span>
-      </div>
-    </section>
+  <section class="status">
+    <label class="switch">
+      <input type="checkbox" id="enabledToggle" />
+      <span class="slider"></span>
+    </label>
+    <span id="statusText">Enabled</span>
+  </section>
 
-    <!-- First-time Onboarding (Hidden by default) -->
-    <section class="info glass-card" id="onboarding" style="display:none;">
-      <p><strong>Welcome to FreeYT!</strong></p>
-      <p style="margin-top: 8px;">Automatically redirects YouTube links to <code>youtube-nocookie.com</code> for enhanced privacy and cookie-free viewing.</p>
-      <p class="details">Toggle above to enable/disable. Try the demo below to see it in action!</p>
-      <button id="tryDemoBtn"><span>🎬 Try Demo Redirect</span></button>
-    </section>
-
-    <!-- Main Info Card -->
-    <section class="info glass-card">
-      <p id="howItWorks">Redirects YouTube links to <code>youtube-nocookie.com</code> for privacy-friendly, cookie-free viewing.</p>
-
-      <!-- Statistics Grid -->
-      <div class="stats-grid">
-        <div class="stat-item">
-          <span>Today</span>
-          <strong id="statToday">0</strong>
-        </div>
-        <div class="stat-item">
-          <span>Total</span>
-          <strong id="statTotal">0</strong>
-        </div>
-        <div class="stat-item">
-          <span>Active</span>
-          <strong id="statActive">✓</strong>
-        </div>
-      </div>
-
-      <p class="details" id="statLast" style="margin-top: 14px; text-align: center;">
-        Last redirect: <strong>—</strong>
-      </p>
-
-      <button id="demoBtn"><span>🚀 Test Redirect</span></button>
-
-      <div id="errorBanner" style="display:none;" role="alert"></div>
-    </section>
-  </main>
+  <section class="info">
+    <p>Automatically redirects YouTube to no-cookie version.</p>
+    <p class="details">Changes "youtube" to "yout-ube" in URLs for privacy protection (no tracking cookies).</p>
+  </section>
 
   <footer>
-    <small>🔒 No tracking. No cookies. Your privacy protected.</small>
+    <small>No tracking. No cookies. Your privacy protected.</small>
   </footer>
 
   <script src="popup.js"></script>

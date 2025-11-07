@@ -1,5 +1,5 @@
 //
-//  SceneDelegate.swift
+//  ViewController.swift
 //  FreeYT
 //
 //  Created by Rishabh Bansal on 10/19/25.
@@ -7,36 +7,13 @@
 
 import UIKit
 
-class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+class ViewController: UIViewController {
 
-    var window: UIWindow?
-
-    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        guard let windowScene = (scene as? UIWindowScene) else { return }
-        
-        window = UIWindow(windowScene: windowScene)
-        let mainViewController = FreeYTViewController()
-        window?.rootViewController = mainViewController
-        window?.makeKeyAndVisible()
-    }
-
-    func sceneDidDisconnect(_ scene: UIScene) {
-        // Called as the scene is being released by the system.
-    }
-
-    func sceneDidBecomeActive(_ scene: UIScene) {
-        // Called when the scene has moved from an inactive state to an active state.
-    }
-
-    func sceneWillResignActive(_ scene: UIScene) {
-        // Called when the scene will move from an active state to an inactive state.
-    }
-
-    func sceneWillEnterForeground(_ scene: UIScene) {
-        // Called as the scene transitions from the background to the foreground.
-    }
-
-    func sceneDidEnterBackground(_ scene: UIScene) {
-        // Called as the scene transitions from the foreground to the background.
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // You can add a label here with instructions, e.g.:
+        // 1. Open Safari
+        // 2. Go to Settings > Extensions
+        // 3. Enable "FreeYT Extension"
     }
 }
