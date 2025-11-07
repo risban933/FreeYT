@@ -6,11 +6,22 @@
 
   const STORAGE_KEY = 'enabled';
 
-  // Update UI based on enabled state
+  // Update UI based on enabled state with smooth transitions
   function setStatusUI(enabled) {
     enabledToggle.checked = enabled;
-    statusText.textContent = enabled ? 'Enabled' : 'Disabled';
-    statusText.style.color = enabled ? 'var(--success)' : 'var(--fg-muted)';
+
+    // Animate text change
+    statusText.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+    statusText.style.opacity = '0';
+    statusText.style.transform = 'translateY(-4px)';
+
+    setTimeout(() => {
+      statusText.textContent = enabled ? 'Enabled' : 'Disabled';
+      statusText.style.color = enabled ? 'var(--success)' : 'var(--fg-muted)';
+      statusText.style.fontWeight = enabled ? '600' : '500';
+      statusText.style.opacity = '1';
+      statusText.style.transform = 'translateY(0)';
+    }, 150);
   }
 
   // Initialize popup
