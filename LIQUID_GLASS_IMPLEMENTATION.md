@@ -1,8 +1,8 @@
-# FreeYT - iOS 26 Liquid Glass Design Implementation
+# FreeYT - Modern iOS Liquid Glass Design Implementation
 
 ## Overview
 
-FreeYT now features a stunning **iOS 26 Liquid Glass design** throughout the entire app, providing a modern, premium aesthetic that aligns with Apple's latest design language.
+FreeYT now features a stunning **Modern iOS Liquid Glass design** throughout the entire app, providing a premium aesthetic that aligns with Apple's contemporary design language and glass morphism trends.
 
 ## What's New
 
@@ -175,13 +175,14 @@ Potential improvements for the liquid glass design:
 
 ## Credits
 
-Design inspired by Apple's iOS 26 design language and modern frosted glass UI patterns.
+Design inspired by Apple's modern iOS design language and contemporary frosted glass UI patterns.
 
 Implementation references:
 - Apple Human Interface Guidelines
-- iOS 26 Design System
+- iOS/iPadOS Design System
 - SwiftUI Advanced Techniques
 - Modern CSS Glass Morphism
+- Glassmorphism UI trends (2024-2025)
 
 ---
 

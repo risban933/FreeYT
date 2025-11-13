@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7,25 +7,32 @@
   <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
-  <header>
-    <img src="images/icon-48.png" alt="FreeYT" width="24" height="24" />
+  <header role="banner">
+    <img src="images/icon-48.png" alt="FreeYT icon" width="24" height="24" />
     <h1>FreeYT</h1>
   </header>
 
-  <section class="status">
-    <label class="switch">
-      <input type="checkbox" id="enabledToggle" />
-      <span class="slider"></span>
-    </label>
-    <span id="statusText">Enabled</span>
-  </section>
+  <main role="main">
+    <section class="status" role="region" aria-label="Extension status">
+      <label class="switch">
+        <input
+          type="checkbox"
+          id="enabledToggle"
+          role="switch"
+          aria-checked="true"
+          aria-label="Toggle FreeYT extension to enable or disable YouTube redirect protection" />
+        <span class="slider" aria-hidden="true"></span>
+      </label>
+      <span id="statusText" role="status" aria-live="polite">Enabled</span>
+    </section>
 
-  <section class="info">
-    <p>Automatically redirects YouTube to no-cookie version.</p>
-    <p class="details">Changes "youtube" to "yout-ube" in URLs for privacy protection (no tracking cookies).</p>
-  </section>
+    <section class="info" role="region" aria-label="Extension information">
+      <p>Automatically redirects YouTube to no-cookie version.</p>
+      <p class="details">Redirects YouTube URLs to youtube-nocookie.com embed format for privacy protection (no tracking cookies).</p>
+    </section>
+  </main>
 
-  <footer>
+  <footer role="contentinfo">
     <small>No tracking. No cookies. Your privacy protected.</small>
   </footer>
 

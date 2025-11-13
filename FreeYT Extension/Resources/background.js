@@ -1,9 +1,10 @@
 // FreeYT Background Service Worker
-// Intercepts YouTube navigation and redirects to no-cookie version
+// Manages declarativeNetRequest rules for YouTube → youtube-nocookie.com redirects
 
 const STORAGE_KEY = 'enabled';
+const RULESET_ID = 'ruleset_1';
 
-// Initialize extension state
+// Initialize extension state on install
 chrome.runtime.onInstalled.addListener(async () => {
   console.log('[FreeYT] Extension installed');
 
@@ -11,115 +12,84 @@ chrome.runtime.onInstalled.addListener(async () => {
   const result = await chrome.storage.local.get(STORAGE_KEY);
   if (result[STORAGE_KEY] === undefined) {
     await chrome.storage.local.set({ [STORAGE_KEY]: true });
+    await enableRedirects();
     console.log('[FreeYT] Initialized as enabled');
-  }
-});
-
-// Check if URL is a video URL
-function isVideoURL(url) {
-  try {
-    const urlObj = new URL(url);
-    console.log('[FreeYT] Checking URL:', url, 'hostname:', urlObj.hostname, 'pathname:', urlObj.pathname);
-    
-    // Don't process if already converted to no-cookie version
-    if (urlObj.hostname.includes('yout-ube.com')) {
-      console.log('[FreeYT] URL already converted to no-cookie version');
-      return false;
+  } else {
+    // Restore previous state
+    if (result[STORAGE_KEY]) {
+      await enableRedirects();
+    } else {
+      await disableRedirects();
     }
-    
-    return (
-      (urlObj.hostname.includes('youtube.com') && (
-        urlObj.pathname.includes('/watch') ||
-        urlObj.pathname.includes('/shorts/') ||
-        urlObj.pathname.includes('/embed/') ||
-        urlObj.pathname.includes('/live/')
-      )) ||
-      urlObj.hostname === 'youtu.be'
-    );
-  } catch (e) {
-    console.error('[FreeYT] Error parsing URL:', e);
-    return false;
+    console.log('[FreeYT] Restored state:', result[STORAGE_KEY] ? 'enabled' : 'disabled');
+  }
+});
+
+// Enable redirect rules
+async function enableRedirects() {
+  try {
+    await chrome.declarativeNetRequest.updateEnabledRulesets({
+      enableRulesetIds: [RULESET_ID]
+    });
+    console.log('[FreeYT] Redirect rules enabled');
+  } catch (error) {
+    console.error('[FreeYT] Failed to enable redirect rules:', error);
   }
 }
 
-// Convert YouTube URL to no-cookie version
-function convertToNoCookie(url) {
-  console.log('[FreeYT] Attempting to convert URL:', url);
-  if (isVideoURL(url)) {
-    const converted = url.replace(/youtube/g, 'yout-ube');
-    console.log('[FreeYT] Converted:', url, '→', converted);
-    return converted;
+// Disable redirect rules
+async function disableRedirects() {
+  try {
+    await chrome.declarativeNetRequest.updateEnabledRulesets({
+      disableRulesetIds: [RULESET_ID]
+    });
+    console.log('[FreeYT] Redirect rules disabled');
+  } catch (error) {
+    console.error('[FreeYT] Failed to disable redirect rules:', error);
   }
-  console.log('[FreeYT] URL is not a video URL, skipping conversion');
-  return null;
 }
-
-// Intercept navigation requests
-chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
-  // Only handle main frame navigations
-  if (details.frameId !== 0) return;
-
-  console.log('[FreeYT] onBeforeNavigate triggered for:', details.url);
-
-  // Check if extension is enabled
-  const { [STORAGE_KEY]: enabled = true } = await chrome.storage.local.get(STORAGE_KEY);
-  if (!enabled) {
-    console.log('[FreeYT] Extension disabled, skipping redirect');
-    return;
-  }
-
-  const noCookieUrl = convertToNoCookie(details.url);
-
-  if (noCookieUrl && noCookieUrl !== details.url) {
-    console.log('[FreeYT] Redirecting:', details.url, '→', noCookieUrl);
-    chrome.tabs.update(details.tabId, { url: noCookieUrl });
-  }
-}, {
-  url: [
-    { hostContains: 'youtube.com' },
-    { hostEquals: 'youtu.be' }
-  ]
-});
-
-// Also listen for history state updates (for YouTube's AJAX navigation)
-chrome.webNavigation.onHistoryStateUpdated.addListener(async (details) => {
-  // Only handle main frame navigations
-  if (details.frameId !== 0) return;
-
-  console.log('[FreeYT] onHistoryStateUpdated triggered for:', details.url);
-
-  // Check if extension is enabled
-  const { [STORAGE_KEY]: enabled = true } = await chrome.storage.local.get(STORAGE_KEY);
-  if (!enabled) {
-    console.log('[FreeYT] Extension disabled, skipping redirect');
-    return;
-  }
-
-  const noCookieUrl = convertToNoCookie(details.url);
-
-  if (noCookieUrl && noCookieUrl !== details.url) {
-    console.log('[FreeYT] Redirecting via history update:', details.url, '→', noCookieUrl);
-    chrome.tabs.update(details.tabId, { url: noCookieUrl });
-  }
-}, {
-  url: [
-    { hostContains: 'youtube.com' },
-    { hostEquals: 'youtu.be' }
-  ]
-});
 
 // Handle messages from popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('[FreeYT] Received message:', request);
 
   if (request.action === 'getState') {
+    // Return current enabled state
     chrome.storage.local.get(STORAGE_KEY).then(result => {
       sendResponse({ enabled: result[STORAGE_KEY] ?? true });
     });
-    return true;
+    return true; // Keep channel open for async response
+  }
+
+  if (request.action === 'setState') {
+    // Update enabled state and toggle rules
+    const enabled = request.enabled;
+    chrome.storage.local.set({ [STORAGE_KEY]: enabled }).then(async () => {
+      if (enabled) {
+        await enableRedirects();
+      } else {
+        await disableRedirects();
+      }
+      console.log('[FreeYT] State updated:', enabled ? 'enabled' : 'disabled');
+      sendResponse({ success: true });
+    });
+    return true; // Keep channel open for async response
   }
 
   return false;
+});
+
+// Listen for storage changes (in case user modifies from another context)
+chrome.storage.onChanged.addListener(async (changes, areaName) => {
+  if (areaName === 'local' && changes[STORAGE_KEY]) {
+    const enabled = changes[STORAGE_KEY].newValue;
+    console.log('[FreeYT] Storage changed, updating rules:', enabled ? 'enabled' : 'disabled');
+    if (enabled) {
+      await enableRedirects();
+    } else {
+      await disableRedirects();
+    }
+  }
 });
 
 console.log('[FreeYT] Background service worker initialized');
