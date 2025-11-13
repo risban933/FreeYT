@@ -6,9 +6,7 @@
   "permissions": [
     "declarativeNetRequest",
     "declarativeNetRequestFeedback",
-    "storage",
-    "tabs",
-    "webNavigation"
+    "storage"
   ],
   "host_permissions": [
     "*://*.youtube.com/*",
@@ -45,16 +43,6 @@
     "service_worker": "background.js",
     "type": "module"
   },
-  "content_scripts": [
-    {
-      "matches": [
-        "*://*.youtube.com/*",
-        "*://youtu.be/*"
-      ],
-      "js": ["content.js"],
-      "run_at": "document_start"
-    }
-  ],
   "browser_specific_settings": {
     "safari": {
       "strict_min_version": "15.4"

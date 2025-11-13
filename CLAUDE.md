@@ -23,23 +23,24 @@ FreeYT is a **production-ready** Safari Web Extension for iOS/macOS that automat
 
 The extension uses Safari's Manifest V3 architecture with declarative net request rules rather than traditional Safari App Extension APIs:
 
-- **Host App (FreeYT/)**: Minimal iOS app that serves as a container for the extension. Contains a WebView-based UI (`ViewController.swift`) that loads `Main.html` to instruct users to enable the extension in Safari settings.
+- **Host App (FreeYT/)**: Minimal iOS app that serves as a container for the extension. Uses a modern SwiftUI-based UI (`LiquidGlassView.swift`) with beautiful liquid glass design that shows extension status and instructions.
 
 - **Extension (FreeYT Extension/)**: Contains all extension logic via:
-  - `manifest.json` - Extension configuration with declarativeNetRequest permissions
+  - `manifest.json` - Extension configuration with declarativeNetRequest permissions (Manifest V3)
   - `rules.json` - Redirect rules using regex patterns to transform YouTube URLs
-  - `background.js` and `content.js` - Minimal message passing stubs (mostly unused in current implementation)
+  - `background.js` - Service worker for managing rule enable/disable state
   - `SafariWebExtensionHandler.swift` - Empty placeholder class (legacy Safari App Extension APIs are not used)
 
 ### URL Redirect Logic
 
-The extension uses 5 declarative rules in `FreeYT Extension/Resources/rules.json`:
+The extension uses 6 declarative rules in `FreeYT Extension/Resources/rules.json`:
 
 1. Rule 1: `youtube.com/watch?v=...` → `youtube-nocookie.com/embed/...`
-2. Rule 2: `youtu.be/...` → `youtube-nocookie.com/embed/...`
-3. Rule 3: `youtube.com/shorts/...` → `youtube-nocookie.com/embed/...`
-4. Rule 4: `m.youtube.com/watch?v=...` → `youtube-nocookie.com/embed/...`
-5. Rule 5: `youtube.com/embed/...` → `youtube-nocookie.com/embed/...` (ensures already-embedded URLs use no-cookie)
+2. Rule 2: `youtube.com/shorts/...` → `youtube-nocookie.com/embed/...`
+3. Rule 3: `youtube.com/embed/...` → `youtube-nocookie.com/embed/...` (ensures already-embedded URLs use no-cookie)
+4. Rule 4: `youtube.com/live/...` → `youtube-nocookie.com/embed/...`
+5. Rule 5: `m.youtube.com/watch?v=...` → `youtube-nocookie.com/embed/...`
+6. Rule 6: `youtu.be/...` → `youtube-nocookie.com/embed/...`
 
 All rules operate on `main_frame` resource types only.
 
@@ -96,49 +97,57 @@ FreeYT/
 ├── FreeYT.xcodeproj/          # Xcode project file
 ├── FreeYT/                    # Host iOS app
 │   ├── AppDelegate.swift      # App lifecycle, extension state checking
-│   ├── SceneDelegate.swift    # Scene configuration
-│   ├── ViewController.swift   # WebView controller for Main.html
+│   ├── SceneDelegate.swift    # Scene configuration using LiquidGlassHostingController
+│   ├── LiquidGlassView.swift  # Modern SwiftUI UI with liquid glass design
+│   ├── LiquidGlassHostingController.swift  # UIHostingController for SwiftUI view
 │   ├── Info.plist            # App configuration
 │   ├── Resources/
-│   │   └── Base.lproj/Main.html  # User instructions HTML
-│   ├── popup.html/css/js     # Extension popup UI (in host app dir)
+│   │   └── Base.lproj/Main.html  # Fallback instructions HTML
 │   └── Assets.xcassets/      # App icons and assets
 ├── FreeYT Extension/          # Safari Web Extension
 │   ├── SafariWebExtensionHandler.swift  # No-op placeholder
 │   ├── Info.plist            # Extension configuration
 │   └── Resources/
 │       ├── manifest.json     # Extension manifest (Manifest V3)
-│       ├── rules.json        # Declarative net request rules
-│       ├── background.js     # Minimal background script
-│       ├── content.js        # Minimal content script
-│       ├── popup.html/css/js # Extension popup (duplicate in Resources/)
+│       ├── rules.json        # Declarative net request rules (6 rules)
+│       ├── background.js     # Service worker for rule management
+│       ├── popup.html        # Extension popup with ARIA accessibility
+│       ├── popup.css         # Popup styling (dark/light mode)
+│       ├── popup.js          # Popup logic with error handling
 │       └── _locales/en/      # Localization strings
-├── FreeYTTests/              # Unit tests
-└── FreeYTUITests/            # UI tests
+├── FreeYTTests/              # Comprehensive unit tests (18 tests)
+├── FreeYTUITests/            # UI tests
+├── .github/workflows/        # CI/CD automation
+│   └── build-and-test.yml    # GitHub Actions workflow
+├── PRIVACY.md                # Privacy policy for App Store
+├── README.md                 # Project documentation
+└── CLAUDE.md                 # This file
 ```
 
 ## Key Files and Their Purpose
 
 ### Extension Core Logic
 
-- **manifest.json** - Extension configuration with permissions, icons, action popup, and background service worker
-- **rules.json** - 5 declarativeNetRequest rules for redirecting YouTube URLs
-- **background.js** - Service worker that manages rule enabling/disabling based on user toggle
-- **popup.html/css/js** - Safari toolbar popup UI with toggle switch and test buttons
+- **manifest.json** - Extension configuration with declarativeNetRequest permissions (Manifest V3)
+- **rules.json** - 6 declarativeNetRequest rules for redirecting YouTube URLs to youtube-nocookie.com
+- **background.js** - Service worker that manages rule enabling/disabling via `updateEnabledRulesets()`
+- **popup.html/css/js** - Safari toolbar popup UI with toggle switch, ARIA accessibility, and error handling
 
 ### Host App
 
-- **ViewController.swift** - Modern UIKit-based UI showing extension status and enable instructions
+- **LiquidGlassView.swift** - Modern SwiftUI UI with liquid glass design showing extension status
+- **LiquidGlassHostingController.swift** - UIHostingController wrapper for SwiftUI view
 - **AppDelegate.swift** - Checks extension state on Mac Catalyst
 - **LaunchScreen.storyboard** - Polished splash screen with icon, title, and subtitle
 - **Assets.xcassets/AppIcon** - Contains 1024x1024 app icon (properly sized)
 
 ### How the Extension Works
 
-1. **Declarative Rules**: Uses `declarativeNetRequest` API for efficient URL redirects
-2. **User Control**: Background service worker enables/disables rules based on storage
-3. **No Content Scripts**: All redirects happen at the network level (faster, more private)
-4. **Comprehensive Coverage**: Handles youtube.com, youtu.be, m.youtube.com, shorts, embeds
+1. **Declarative Rules**: Uses `declarativeNetRequest` API for efficient URL redirects at network level
+2. **User Control**: Background service worker enables/disables rules via `chrome.declarativeNetRequest.updateEnabledRulesets()`
+3. **No Content Scripts**: All redirects happen at the network level (faster, more private, better battery life)
+4. **Comprehensive Coverage**: Handles youtube.com, youtu.be, m.youtube.com, shorts, embeds, and live streams
+5. **Privacy-First**: Zero data collection, all processing happens locally on device
 
 ## Mac Catalyst Support
 
@@ -152,16 +161,22 @@ The app includes Mac Catalyst support with extension state checking in `AppDeleg
 
 ### What's Complete
 
-- ✅ **Manifest V3 implementation** with declarativeNetRequest
-- ✅ **Functional toggle popup** with enable/disable and test buttons
-- ✅ **Background service worker** for dynamic rule management
-- ✅ **Comprehensive redirect rules** covering all YouTube URL patterns
-- ✅ **Polished UI** with dark/light mode support
+- ✅ **Manifest V3 implementation** with declarativeNetRequest (network-level redirects)
+- ✅ **Functional toggle popup** with enable/disable control
+- ✅ **Background service worker** for dynamic rule management via `updateEnabledRulesets()`
+- ✅ **Comprehensive redirect rules** covering all YouTube URL patterns (6 rules)
+- ✅ **Correct redirect target** - Uses Google's official youtube-nocookie.com domain
+- ✅ **Polished SwiftUI UI** with liquid glass design and dark/light mode support
 - ✅ **Proper app icon** (1024x1024, all sizes configured)
 - ✅ **Beautiful launch screen** with branding
 - ✅ **Bundle ID consistency** across all files
 - ✅ **Extension state detection** for Mac Catalyst
-- ✅ **Clean codebase** (duplicates removed)
+- ✅ **Clean codebase** (redundant code removed, no content scripts)
+- ✅ **Comprehensive test suite** (18 unit tests covering URL patterns, transformations, privacy)
+- ✅ **ARIA accessibility** (full screen reader support with proper ARIA labels)
+- ✅ **Error handling** (user-friendly error messages and recovery)
+- ✅ **Privacy policy** (comprehensive PRIVACY.md for App Store submission)
+- ✅ **CI/CD automation** (GitHub Actions for builds, tests, and validation)
 - ✅ **Builds successfully** with no errors or warnings
 
 ### Testing the Extension
@@ -191,8 +206,71 @@ The app includes Mac Catalyst support with extension state checking in `AppDeleg
 
 ### For App Store Submission
 
-Before submitting to App Store, update:
-1. Bundle IDs in Xcode project settings (currently using `com.freeyt.app`)
-2. App Store Connect metadata and screenshots
-3. Privacy policy (extension doesn't collect any data)
-4. App review notes explaining the extension's privacy benefits
+Ready for submission! ✅
+
+**Completed:**
+1. ✅ Bundle IDs configured (`com.freeyt.app` and `com.freeyt.app.extension`)
+2. ✅ Privacy policy created (PRIVACY.md - comprehensive, GDPR/CCPA compliant)
+3. ✅ Zero data collection verified (extension collects no user data)
+4. ✅ Comprehensive test suite (18 tests passing)
+5. ✅ CI/CD workflow (automated builds and validation)
+6. ✅ Accessibility implemented (ARIA labels, screen reader support)
+7. ✅ Modern Manifest V3 architecture
+
+**Todo before submission:**
+- Create App Store screenshots
+- Write App Store description and metadata
+- Prepare app review notes explaining privacy benefits
+- Sign with distribution certificate
+- Test on physical iOS devices (currently tested on simulators)
+
+## Code Quality and Best Practices
+
+### Architecture Improvements (Completed)
+
+- ✅ **Removed redundant code:** Eliminated triple-redundant redirect implementations
+- ✅ **Network-level redirects only:** Using declarativeNetRequest exclusively (no content scripts)
+- ✅ **Proper error handling:** User-friendly error messages with recovery
+- ✅ **Accessibility first:** Full ARIA support for screen readers
+- ✅ **Zero data collection:** Privacy-first design with no telemetry
+- ✅ **Modern SwiftUI:** Clean, maintainable UI code with liquid glass design
+- ✅ **Comprehensive tests:** 18 unit tests covering core functionality
+
+### Performance Optimizations (Completed)
+
+- ✅ **No content script polling:** Removed 2-second interval polling
+- ✅ **No MutationObservers:** Removed unnecessary DOM monitoring
+- ✅ **Network-level redirects:** Faster, more efficient than JavaScript-based redirects
+- ✅ **Minimal permissions:** Only 3 permissions requested (declarativeNetRequest, declarativeNetRequestFeedback, storage)
+- ✅ **Battery efficient:** No background polling or unnecessary wake-ups
+
+### Security and Privacy (Completed)
+
+- ✅ **Minimal permissions:** Only requests necessary permissions
+- ✅ **No network requests:** Extension makes zero external network calls
+- ✅ **Local processing only:** All redirect logic runs on-device
+- ✅ **Content Security Policy:** Implemented in popup HTML
+- ✅ **No eval() usage:** No dynamic code execution
+- ✅ **Open source:** Full code transparency on GitHub
+
+## Testing and Validation
+
+### Automated Testing
+
+**CI/CD Pipeline (GitHub Actions):**
+- iOS build validation
+- Mac Catalyst build validation
+- Unit test execution (18 tests)
+- JSON validation (manifest.json, rules.json, messages.json)
+- Extension structure validation
+- Security scanning
+- Permission auditing
+
+**Test Coverage:**
+- URL pattern matching (6 patterns tested)
+- Video ID extraction (multiple formats)
+- Redirect transformation logic
+- Edge cases (multiple parameters, homepage, etc.)
+- Bundle configuration
+- Privacy policy validation
+- Resource existence checks

@@ -5,11 +5,11 @@
     "action": {
       "type": "redirect",
       "redirect": {
-        "regexSubstitution": "\\1yout-ube\\2"
+        "regexSubstitution": "https://www.youtube-nocookie.com/embed/\\1"
       }
     },
     "condition": {
-      "regexFilter": "^(https?://(www\\.)?)youtube(\\.com/watch\\?.*)$",
+      "regexFilter": "^https?://(?:www\\.)?youtube\\.com/watch\\?(?:.*&)?v=([^&]+).*$",
       "resourceTypes": ["main_frame"]
     }
   },
@@ -19,11 +19,11 @@
     "action": {
       "type": "redirect",
       "redirect": {
-        "regexSubstitution": "\\1yout-ube\\2"
+        "regexSubstitution": "https://www.youtube-nocookie.com/embed/\\1"
       }
     },
     "condition": {
-      "regexFilter": "^(https?://(www\\.)?)youtube(\\.com/shorts/.*)$",
+      "regexFilter": "^https?://(?:www\\.)?youtube\\.com/shorts/([^/?]+).*$",
       "resourceTypes": ["main_frame"]
     }
   },
@@ -33,11 +33,11 @@
     "action": {
       "type": "redirect",
       "redirect": {
-        "regexSubstitution": "\\1yout-ube\\2"
+        "regexSubstitution": "https://www.youtube-nocookie.com/embed/\\1"
       }
     },
     "condition": {
-      "regexFilter": "^(https?://(www\\.)?)youtube(\\.com/embed/.*)$",
+      "regexFilter": "^https?://(?:www\\.)?youtube\\.com/embed/([^/?]+).*$",
       "resourceTypes": ["main_frame"]
     }
   },
@@ -47,11 +47,11 @@
     "action": {
       "type": "redirect",
       "redirect": {
-        "regexSubstitution": "\\1yout-ube\\2"
+        "regexSubstitution": "https://www.youtube-nocookie.com/embed/\\1"
       }
     },
     "condition": {
-      "regexFilter": "^(https?://(www\\.)?)youtube(\\.com/live/.*)$",
+      "regexFilter": "^https?://(?:www\\.)?youtube\\.com/live/([^/?]+).*$",
       "resourceTypes": ["main_frame"]
     }
   },
@@ -61,11 +61,11 @@
     "action": {
       "type": "redirect",
       "redirect": {
-        "regexSubstitution": "\\1yout-ube\\2"
+        "regexSubstitution": "https://www.youtube-nocookie.com/embed/\\1"
       }
     },
     "condition": {
-      "regexFilter": "^(https?://m\\.)youtube(\\.com/watch\\?.*)$",
+      "regexFilter": "^https?://m\\.youtube\\.com/watch\\?(?:.*&)?v=([^&]+).*$",
       "resourceTypes": ["main_frame"]
     }
   },
@@ -75,11 +75,11 @@
     "action": {
       "type": "redirect",
       "redirect": {
-        "regexSubstitution": "https://yout-ube.be\\1"
+        "regexSubstitution": "https://www.youtube-nocookie.com/embed/\\1"
       }
     },
     "condition": {
-      "regexFilter": "^https?://youtu\\.be(/.*)?$",
+      "regexFilter": "^https?://youtu\\.be/([^/?]+).*$",
       "resourceTypes": ["main_frame"]
     }
   }
