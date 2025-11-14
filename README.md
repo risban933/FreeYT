@@ -17,7 +17,7 @@ FreeYT intercepts YouTube links and redirects them to embed-only versions that d
 - Toggle extension on/off via Safari toolbar popup
 - Persistent state across browser sessions
 - Dark/light mode support in popup UI
-- Native iOS/Mac host app with modern UIKit interface
+- Native iOS/Mac host app with modern SwiftUI interface (liquid glass design)
 - No data collection, no tracking, no analytics
 
 ## Technical Architecture
@@ -95,7 +95,9 @@ FreeYT/
 ├── FreeYT.xcodeproj          # Xcode project file
 ├── FreeYT/                   # Host application
 │   ├── AppDelegate.swift     # App lifecycle management
-│   ├── ViewController.swift  # Main app screen (native UIKit)
+│   ├── SceneDelegate.swift   # Scene configuration
+│   ├── LiquidGlassView.swift # Main app screen (modern SwiftUI)
+│   ├── LiquidGlassHostingController.swift  # UIHostingController wrapper
 │   ├── Info.plist           # App bundle configuration
 │   ├── Assets.xcassets/     # Icons and images
 │   └── LaunchScreen.storyboard  # Splash screen
@@ -133,12 +135,13 @@ Safari toolbar popup interface that:
 - Includes test buttons for verification
 - Supports system dark/light mode
 
-### ViewController.swift
-Native iOS/Mac app UI that:
-- Displays app branding and instructions
-- Provides button to open Safari settings
+### LiquidGlassView.swift
+Modern SwiftUI app UI that:
+- Displays app branding with liquid glass design
+- Shows extension status and instructions
+- Supports dark/light mode automatically
+- Provides beautiful, polished user experience
 - Auto-detects extension status on Mac Catalyst
-- Shows enable instructions for users
 
 ## Bundle Identifiers
 
@@ -207,7 +210,10 @@ Edit the following files:
 - `FreeYT Extension/Resources/popup.js` - Functionality
 
 ### Updating App UI
-Edit `FreeYT/ViewController.swift` for host app interface changes.
+Edit the following files for host app interface changes:
+- `FreeYT/LiquidGlassView.swift` - SwiftUI view structure and layout
+- `FreeYT/LiquidGlassHostingController.swift` - UIHostingController wrapper
+- `FreeYT/SceneDelegate.swift` - Scene configuration
 
 ## Roadmap
 
