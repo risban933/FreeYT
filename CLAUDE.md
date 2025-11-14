@@ -29,7 +29,9 @@ The extension uses Safari's Manifest V3 architecture with declarative net reques
   - `manifest.json` - Extension configuration with declarativeNetRequest permissions (Manifest V3)
   - `rules.json` - Redirect rules using regex patterns to transform YouTube URLs
   - `background.js` - Service worker for managing rule enable/disable state
+  - `popup.html/css/js` - Safari toolbar popup UI for user control
   - `SafariWebExtensionHandler.swift` - Empty placeholder class (legacy Safari App Extension APIs are not used)
+  - **No content scripts** - All redirects happen at network level via declarativeNetRequest
 
 ### URL Redirect Logic
 
