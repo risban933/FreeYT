@@ -14,5 +14,5 @@
 import Foundation
 
 /// No-op placeholder to keep the target compiling. All extension logic lives in
-/// manifest.json, rules.json, background.js, and content.js.
+/// manifest.json, rules.json, background.js, popup.html/css/js.
 @objc class SafariWebExtensionHandlerPlaceholder: NSObject {}
